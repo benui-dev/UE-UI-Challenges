@@ -2,16 +2,32 @@
 
 #include "BUIScoreSubsystem.h"
 
-bool UBUIScoreSubsystem::ShouldCreateSubsystem(UObject* Outer) const
+UBUIScoreSubsystem::UBUIScoreSubsystem()
+	: Score(0)
+	  , TimeLeftToNextScoreIncrease(INDEX_NONE)
+	  , MinScoreChangeDuration(0.2f)
+	  , MaxScoreChangeDuration(1.0f)
 {
-	return true;
 }
 
 void UBUIScoreSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 {
 	Super::OnWorldBeginPlay(InWorld);
-	Score = FMath::RandRange(1,9999);
+
+	Score = FMath::RandRange(1, 9999);
 	OnScoreChangedDelegate.Broadcast(Score, Score);
+}
+
+void UBUIScoreSubsystem::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	TimeLeftToNextScoreIncrease -= DeltaTime;
+	if (TimeLeftToNextScoreIncrease <= 0)
+	{
+		AddScore();
+		TimeLeftToNextScoreIncrease = FMath::FRandRange(MinScoreChangeDuration, MaxScoreChangeDuration);
+	}
 }
 
 int32 UBUIScoreSubsystem::GetScore() const
